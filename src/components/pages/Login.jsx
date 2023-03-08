@@ -13,7 +13,10 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
+import axios from "axios";
+
+import global from "../../resources/global.json";
 
 function Copyright(props) {
 	return (
@@ -42,6 +45,8 @@ const theme = createTheme({
 });
 
 export default function Login() {
+	const navigate = useNavigate();
+
 	const handleSubmit = (event) => {
 		event.preventDefault();
 		const data = new FormData(event.currentTarget);
@@ -49,6 +54,25 @@ export default function Login() {
 			email: data.get("email"),
 			password: data.get("password"),
 		});
+		const userData = {
+			email: data.get("email"),
+			password: data.get("password"),
+		};
+
+		axios
+			.post(global.CONNECTION.ENDPOINT + "/api/v1/auth/authenticate", userData)
+			.then((res) => {
+				const token = res.data.token;
+				console.log(token);
+				//set Token in Local Storage
+				//Go to dashboard
+				//navigate("/dashboard");
+			})
+			.catch((err) => {
+				console.error(err);
+				const status = err.response.status;
+				console.error(status);
+			});
 	};
 
 	return (
@@ -84,7 +108,7 @@ export default function Login() {
 							alignItems: "center",
 						}}
 					>
-						<Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
+						<Avatar sx={{ m: 1, bgcolor: "primary.main" }}>
 							<LockOutlinedIcon />
 						</Avatar>
 						<Typography component="h1" variant="h5">
@@ -116,10 +140,6 @@ export default function Login() {
 								id="password"
 								autoComplete="current-password"
 							/>
-							<FormControlLabel
-								control={<Checkbox value="remember" color="primary" />}
-								label="Remember me"
-							/>
 							<Button
 								type="submit"
 								fullWidth
@@ -136,11 +156,9 @@ export default function Login() {
 									</Link>
 								</Grid>
 								<Grid item>
-									<RouterLink to="/register">
-										<Link href="#" variant="body2">
-											{"Don't have an account? Sign Up"}
-										</Link>
-									</RouterLink>
+									<Link href="/register" variant="body2">
+										{"Don't have an account? Sign Up"}
+									</Link>
 								</Grid>
 							</Grid>
 							<Copyright sx={{ mt: 5 }} />

@@ -13,7 +13,10 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
+import axios from "axios";
+
+import global from "../../resources/global.json";
 
 function Copyright(props) {
 	return (
@@ -42,13 +45,37 @@ const theme = createTheme({
 });
 
 export default function Register() {
+	const navigate = useNavigate();
 	const handleSubmit = (event) => {
 		event.preventDefault();
 		const data = new FormData(event.currentTarget);
 		console.log({
 			email: data.get("email"),
 			password: data.get("password"),
+			name: `${data.get("firstName")} ${data.get("lastName")}`,
+			address: data.get("address"),
+			postalCode: data.get("postal-code"),
 		});
+
+		const userData = {
+			email: data.get("email"),
+			password: data.get("password"),
+			name: `${data.get("firstName")} ${data.get("lastName")}`,
+			address: data.get("address"),
+			postalCode: data.get("postal-code"),
+			status: 1,
+		};
+
+		axios
+			.post(global.CONNECTION.ENDPOINT + "/api/v1/auth/register", userData)
+			.then((res) => {
+				console.log(res);
+				const token = res.data.token;
+				//insert token into local storage
+				// go to dashboard
+				// navigate("/dashboard");
+			})
+			.catch((err) => console.error(err));
 	};
 
 	return (
@@ -63,7 +90,7 @@ export default function Register() {
 						alignItems: "center",
 					}}
 				>
-					<Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
+					<Avatar sx={{ m: 1, bgcolor: "primary.main" }}>
 						<LockOutlinedIcon />
 					</Avatar>
 					<Typography component="h1" variant="h5">
@@ -118,12 +145,34 @@ export default function Register() {
 									autoComplete="new-password"
 								/>
 							</Grid>
+							<Grid item xs={6}>
+								<TextField
+									required
+									fullWidth
+									name="address"
+									label="Address"
+									type="address"
+									id="address"
+									autoComplete="new-address"
+								/>
+							</Grid>
+							<Grid item xs={6}>
+								<TextField
+									required
+									fullWidth
+									name="postal-code"
+									label="Postal-code"
+									type="postal-code"
+									id="postal-code"
+									autoComplete="new-postal-code"
+								/>
+							</Grid>
 							<Grid item xs={12}>
 								<FormControlLabel
 									control={
 										<Checkbox value="allowExtraEmails" color="primary" />
 									}
-									label="I want to receive inspiration, marketing promotions and updates via email."
+									label="I want to receive daily email notification of my selling trend"
 								/>
 							</Grid>
 						</Grid>
@@ -133,15 +182,13 @@ export default function Register() {
 							variant="contained"
 							sx={{ mt: 3, mb: 2 }}
 						>
-							Sign Up
+							Register
 						</Button>
 						<Grid container justifyContent="flex-end">
 							<Grid item>
-								<RouterLink to="/login">
-									<Link href="#" variant="body2">
-										Already have an account? Sign in
-									</Link>
-								</RouterLink>
+								<Link href="/login" variant="body2">
+									Already have an account? Sign in
+								</Link>
 							</Grid>
 						</Grid>
 					</Box>
